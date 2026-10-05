@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les jours et les mois – Jeu interactif</title>
+<style>
+  :root{
+    --ink:#304b55; --cream:#fffaf1; --card:#ffffff; --outline:#bed2cf;
+    --yellow:#ffe5a6; --blue:#cdddf8; --purple:#dfd0f5; --pink:#f7d2df;
+    --mint:#c4ebe1; --peach:#ffd9c4; --green:#d8f0c8; --sky:#d9eef7;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:var(--cream);color:var(--ink)}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:
+    radial-gradient(circle at 7% 10%,#ffe2a0 0 8px,transparent 9px),
+    radial-gradient(circle at 91% 8%,#bfe9dd 0 11px,transparent 12px),
+    radial-gradient(circle at 94% 76%,#f5cbd7 0 9px,transparent 10px),
+    radial-gradient(circle at 12% 83%,#d5e4fb 0 10px,transparent 11px)}
+  .app-shell{width:100%;padding:22px 14px 42px}
+  main{max-width:1180px;margin:auto}
+  .hero{text-align:center;margin:6px auto 24px}
+  .emoji-row{display:inline-flex;gap:9px;background:#ffffffdd;padding:10px 18px;border-radius:999px;box-shadow:0 4px 16px #00000010;margin-bottom:14px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(34px,5vw,62px);line-height:1.05;margin:0 auto;max-width:940px}
+  .hero p{font-size:clamp(16px,2vw,22px);font-weight:700;max-width:780px;margin:14px auto 0}
+  .teacher-bar{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px auto 4px}
+  .jump{border:0;border-radius:999px;padding:11px 16px;font-weight:800;background:#fff;box-shadow:0 4px 12px #0000000d;cursor:pointer;text-decoration:none;color:inherit}
+  .jump:hover{transform:translateY(-2px)}
+  .game-section{margin:28px 0 38px;scroll-margin-top:18px}
+  .section-title{display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;margin:0 0 14px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(28px,4vw,44px)}
+  .section-kicker{text-align:center;font-weight:800;margin:-2px 0 16px;font-size:clamp(15px,1.8vw,19px)}
+  .board{background:#fff;border-radius:30px;padding:24px;box-shadow:0 16px 50px #7182731b;border:1px solid #ffffff}
+  .topbar{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px}
+  .score{display:inline-flex;align-items:center;gap:9px;background:#fff0ba;border-radius:18px;padding:13px 18px;font-size:18px;font-weight:800}
+  .controls{display:flex;gap:9px;flex-wrap:wrap}
+  button{font:inherit;color:inherit}
+  .control{border:0;border-radius:16px;padding:12px 15px;font-weight:800;cursor:pointer;box-shadow:0 3px 10px #0000000c}
+  .listen-btn{background:#e0f2fa}.restart-btn{background:#fde3e5}.sound-btn{background:#e8f4dd}
+  .board h3{font-size:clamp(21px,2.7vw,30px);margin:10px 0 13px}
+  .tray,.slots{display:grid;gap:12px}
+  .days-grid{grid-template-columns:repeat(7,1fr)}
+  .months-grid{grid-template-columns:repeat(6,1fr)}
+  .tray{margin-bottom:26px;min-height:76px}
+  .item-card{border:0;border-radius:21px;padding:15px 7px;min-height:72px;font-size:clamp(15px,1.7vw,21px);font-weight:800;cursor:grab;touch-action:none;user-select:none;box-shadow:0 5px 0 #344b5420,0 8px 18px #344b5414;transition:transform .18s,box-shadow .18s,opacity .18s}
+  .item-card:hover{transform:translateY(-3px)}
+  .item-card.selected{outline:4px solid #304b55;outline-offset:3px;transform:translateY(-4px)}
+  .item-card.drag-source{opacity:.32}.item-card:active{cursor:grabbing}
+  .item-card:nth-child(8n+1){background:var(--peach)}
+  .item-card:nth-child(8n+2){background:var(--yellow)}
+  .item-card:nth-child(8n+3){background:var(--green)}
+  .item-card:nth-child(8n+4){background:var(--mint)}
+  .item-card:nth-child(8n+5){background:var(--blue)}
+  .item-card:nth-child(8n+6){background:var(--purple)}
+  .item-card:nth-child(8n+7){background:var(--pink)}
+  .item-card:nth-child(8n){background:var(--sky)}
+  .slot{min-height:103px;border:3px dashed var(--outline);background:#ffffffc4;border-radius:21px;padding:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:background .18s,transform .18s,border-color .18s}
+  .slot.hovered{background:#e9f8df;border-color:#79b887;transform:scale(1.025)}
+  .slot.filled{border-style:solid;border-color:#a7d9b7;background:#eff9ea}
+  .slot .item-card{width:100%;min-height:63px;cursor:default;box-shadow:0 3px 0 #344b5420}
+  .slot .item-card:hover{transform:none}
+  .num{font-size:14px;font-weight:900;opacity:.58}
+  .message{min-height:35px;text-align:center;font-weight:900;font-size:20px;margin:20px 0 0}
+  .divider{height:2px;border:0;background:linear-gradient(90deg,transparent,#cddbd8,transparent);margin:18px 0 4px}
+  footer{text-align:center;font-weight:700;padding:6px 8px 0;opacity:.82}
+  .drag-ghost{position:fixed;z-index:1000;pointer-events:none;display:grid;place-items:center;border-radius:21px;box-shadow:0 18px 35px #344b5440;font-size:21px;font-weight:800;padding:13px 20px;white-space:nowrap;transform:translate(-50%,-50%) rotate(-4deg)}
+  .confetti-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1100}
+  .confetti{position:absolute;top:-25px;width:11px;height:19px;border-radius:3px;animation:fall var(--duration) linear forwards;animation-delay:var(--delay)}
+  @keyframes fall{to{transform:translate(var(--drift),100vh) rotate(850deg);opacity:0}}
+  button:focus-visible,.jump:focus-visible{outline:4px solid #265d7b;outline-offset:4px}
+  @media(max-width:980px){.days-grid{grid-template-columns:repeat(4,1fr)}.months-grid{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:650px){
+    .app-shell{padding:14px 9px 30px}.board{padding:15px}.days-grid,.months-grid{grid-template-columns:repeat(2,1fr)}
+    .item-card{min-height:64px}.slot{min-height:88px}.controls{width:100%}.control{flex:1}.topbar{align-items:stretch}
+  }
+  @media(prefers-reduced-motion:reduce){.confetti{animation-duration:.01ms!important}.item-card,.slot,.jump{transition:none}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+<main>
+  <header class="hero">
+    <div class="emoji-row" aria-hidden="true"><span>☀️</span><span>🗓️</span><span>✏️</span><span>🌈</span></div>
+    <h1>Les jours de la semaine & les mois de l’année</h1>
+    <p>Écoute, clique ou glisse les cartes dans le bon ordre. Un jeu simple pour apprendre en s’amusant !</p>
+    <div class="teacher-bar">
+      <a class="jump" href="#jours">📅 Aller aux jours</a>
+      <a class="jump" href="#mois">🌷 Aller aux mois</a>
+    </div>
+  </header>
+
+  <section class="game-section" id="jours">
+    <h2 class="section-title">📅 Les jours de la semaine</h2>
+    <p class="section-kicker">De lundi à dimanche</p>
+    <div class="board game" data-game="days">
+      <div class="topbar">
+        <div class="score"><span>⭐</span><span>Score :</span><strong class="score-value" aria-live="polite">0/7</strong></div>
+        <div class="controls">
+          <button class="control listen-btn" type="button">▶️ Écouter dans l’ordre</button>
+          <button class="control sound-btn" type="button" aria-pressed="true">🔊 Son activé</button>
+          <button class="control restart-btn" type="button">🔄 Recommencer</button>
+        </div>
+      </div>
+      <h3>1. Les cartes à ranger</h3>
+      <div class="tray days-grid"></div>
+      <h3>2. Mets-les dans le bon ordre</h3>
+      <div class="slots days-grid"></div>
+      <p class="message" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <section class="game-section" id="mois">
+    <h2 class="section-title">🌷 Les mois de l’année</h2>
+    <p class="section-kicker">De janvier à décembre</p>
+    <div class="board game" data-game="months">
+      <div class="topbar">
+        <div class="score"><span>⭐</span><span>Score :</span><strong class="score-value" aria-live="polite">0/12</strong></div>
+        <div class="controls">
+          <button class="control listen-btn" type="button">▶️ Écouter dans l’ordre</button>
+          <button class="control sound-btn" type="button" aria-pressed="true">🔊 Son activé</button>
+          <button class="control restart-btn" type="button">🔄 Recommencer</button>
+        </div>
+      </div>
+      <h3>1. Les cartes à ranger</h3>
+      <div class="tray months-grid"></div>
+      <h3>2. Mets-les dans le bon ordre</h3>
+      <div class="slots months-grid"></div>
+      <p class="message" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <footer>Astuce : l’enfant peut glisser une carte, ou simplement cliquer sur la carte puis sur sa place.</footer>
+</main>
+<div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+</div>
+
+<script>
+const GAME_DATA = {
+  days: ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"],
+  months: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"]
+};
+let audioContext = null;
+
+function speak(text, muted=false, rate=.82){
+  if(muted || !("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "fr-FR"; u.rate = rate; u.pitch = 1.05;
+  const voices = speechSynthesis.getVoices();
+  const french = voices.find(v => v.lang && v.lang.toLowerCase().startsWith("fr"));
+  if(french) u.voice = french;
+  speechSynthesis.speak(u);
+}
+function notes(freqs, muted=false, gentle=false){
+  if(muted) return;
+  try{
+    audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+    if(audioContext.state === "suspended") audioContext.resume();
+    const start = audioContext.currentTime;
+    freqs.forEach((f,i)=>{
+      const o=audioContext.createOscillator(), g=audioContext.createGain();
+      o.type="sine"; o.frequency.value=f;
+      const t=start+i*(gentle?.18:.13);
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(gentle?.07:.12,t+.025);
+      g.gain.exponentialRampToValueAtTime(.0001,t+.24);
+      o.connect(g).connect(audioContext.destination); o.start(t); o.stop(t+.25);
+    });
+  }catch(e){}
+}
+function celebrate(){
+  const layer=document.getElementById("confetti-layer"); layer.replaceChildren();
+  const colors=["#ffbc73","#f3a9bb","#8bd1bc","#a4bae9","#f6dc7d","#cdb6eb"];
+  for(let i=0;i<90;i++){
+    const p=document.createElement("span"); p.className="confetti";
+    p.style.left=Math.random()*100+"%"; p.style.background=colors[i%colors.length];
+    p.style.setProperty("--drift",(Math.random()-.5)*260+"px");
+    p.style.setProperty("--duration",(2.2+Math.random()*1.8)+"s");
+    p.style.setProperty("--delay",(Math.random()*.8)+"s"); layer.appendChild(p);
+  }
+  setTimeout(()=>layer.replaceChildren(),5000);
+}
+function shuffle(a){
+  const copy=[...a];
+  for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}
+  return copy;
+}
+
+class OrderGame{
+  constructor(root,names){
+    this.root=root; this.names=names; this.tray=root.querySelector(".tray"); this.slotsEl=root.querySelector(".slots");
+    this.score=root.querySelector(".score-value"); this.feedback=root.querySelector(".message");
+    this.soundBtn=root.querySelector(".sound-btn"); this.restartBtn=root.querySelector(".restart-btn"); this.listenBtn=root.querySelector(".listen-btn");
+    this.selected=null; this.muted=false; this.count=0; this.drag=null; this.cards=[]; this.slots=[];
+    this.build(); this.bind(); this.reset();
+  }
+  build(){
+    this.names.forEach((name,index)=>{
+      const card=document.createElement("button"); card.type="button"; card.className="item-card"; card.dataset.index=index; card.textContent=name;
+      this.tray.appendChild(card); this.cards.push(card);
+      const slot=document.createElement("button"); slot.type="button"; slot.className="slot"; slot.dataset.slot=index;
+      slot.innerHTML=`<span class="num">${index+1}</span>`; slot.setAttribute("aria-label",`Place ${index+1}, ${name.toLowerCase()}`);
+      this.slotsEl.appendChild(slot); this.slots.push(slot);
+    });
+  }
+  clearSelection(){ if(this.selected) this.selected.classList.remove("selected"); this.selected=null; }
+  choose(card){
+    if(card.closest(".slot")) return;
+    speak(this.names[Number(card.dataset.index)],this.muted);
+    if(this.selected===card){this.clearSelection();return;}
+    this.clearSelection(); this.selected=card; card.classList.add("selected"); this.feedback.textContent="";
+  }
+  place(card,slot){
+    if(!card || !slot || card.closest(".slot") || slot.classList.contains("filled")) return;
+    if(Number(card.dataset.index)!==Number(slot.dataset.slot)){
+      this.feedback.textContent="Essaie encore ! 🌷"; notes([330,294],this.muted,true); speak("Essaie encore !",this.muted); return;
+    }
+    this.clearSelection(); card.classList.remove("drag-source"); card.setAttribute("tabindex","-1"); slot.appendChild(card); slot.classList.add("filled");
+    this.count++; this.score.textContent=`${this.count}/${this.names.length}`;
+    if(this.count===this.names.length){
+      this.feedback.textContent="Bravo ! Tout est dans le bon ordre ! 🎉"; notes([523,659,784,1047,1319],this.muted); speak("Bravo ! Tout est dans le bon ordre !",this.muted); celebrate();
+    }else{this.feedback.textContent="Super ! Continue ! ⭐"; notes([523,784],this.muted);}
+  }
+  reset(){
+    if("speechSynthesis" in window) speechSynthesis.cancel(); this.clearSelection(); this.drag?.ghost?.remove(); this.drag=null; this.count=0;
+    this.score.textContent=`0/${this.names.length}`; this.feedback.textContent="";
+    this.slots.forEach((slot,i)=>{slot.classList.remove("filled","hovered");slot.replaceChildren();const n=document.createElement("span");n.className="num";n.textContent=i+1;slot.appendChild(n);slot.setAttribute("aria-label",`Place ${i+1}, ${this.names[i].toLowerCase()}`);});
+    shuffle(this.cards).forEach(card=>{card.classList.remove("drag-source","selected");card.removeAttribute("tabindex");this.tray.appendChild(card);});
+  }
+  listenAll(){
+    if(this.muted || !("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(this.names.join(", ")); u.lang="fr-FR";u.rate=.72;u.pitch=1.03;
+    const voices=speechSynthesis.getVoices(); const fr=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith("fr")); if(fr)u.voice=fr;
+    speechSynthesis.speak(u);
+  }
+  bind(){
+    this.cards.forEach(card=>{
+      card.addEventListener("click",()=>{if(card.dataset.ignoreClick==="true"){card.dataset.ignoreClick="false";return;}this.choose(card);});
+      card.addEventListener("pointerdown",e=>{if(card.closest(".slot")||e.button!==0)return;this.drag={card,startX:e.clientX,startY:e.clientY,active:false,ghost:null};});
+    });
+    document.addEventListener("pointermove",e=>{
+      if(!this.drag)return;
+      if(!this.drag.active && Math.hypot(e.clientX-this.drag.startX,e.clientY-this.drag.startY)>9){
+        this.drag.active=true;this.clearSelection();const g=document.createElement("div");g.className="drag-ghost";g.textContent=this.names[Number(this.drag.card.dataset.index)];g.style.background=getComputedStyle(this.drag.card).backgroundColor;g.style.color=getComputedStyle(this.drag.card).color;document.body.appendChild(g);this.drag.ghost=g;this.drag.card.classList.add("drag-source");
+      }
+      if(!this.drag.active)return;e.preventDefault();this.drag.ghost.style.left=e.clientX+"px";this.drag.ghost.style.top=e.clientY+"px";
+      this.slots.forEach(s=>s.classList.remove("hovered"));const t=document.elementFromPoint(e.clientX,e.clientY)?.closest(".slot");if(t&&this.root.contains(t)&&!t.classList.contains("filled"))t.classList.add("hovered");
+    },{passive:false});
+    document.addEventListener("pointerup",e=>{
+      if(!this.drag)return;const cur=this.drag;this.drag=null;if(!cur.active)return;cur.card.dataset.ignoreClick="true";cur.ghost?.remove();cur.card.classList.remove("drag-source");this.slots.forEach(s=>s.classList.remove("hovered"));
+      speak(this.names[Number(cur.card.dataset.index)],this.muted);const slot=document.elementFromPoint(e.clientX,e.clientY)?.closest(".slot");if(slot&&this.root.contains(slot))this.place(cur.card,slot);setTimeout(()=>{cur.card.dataset.ignoreClick="false";},350);
+    });
+    document.addEventListener("pointercancel",()=>{if(!this.drag)return;this.drag.ghost?.remove();this.drag.card.classList.remove("drag-source");this.drag=null;this.slots.forEach(s=>s.classList.remove("hovered"));});
+    this.slots.forEach(slot=>slot.addEventListener("click",()=>this.place(this.selected,slot)));
+    this.restartBtn.addEventListener("click",()=>this.reset());
+    this.listenBtn.addEventListener("click",()=>this.listenAll());
+    this.soundBtn.addEventListener("click",()=>{this.muted=!this.muted;if(this.muted&&"speechSynthesis" in window)speechSynthesis.cancel();this.soundBtn.setAttribute("aria-pressed",String(!this.muted));this.soundBtn.textContent=this.muted?"🔇 Son désactivé":"🔊 Son activé";});
+  }
+}
+
+document.querySelectorAll(".game").forEach(root=>new OrderGame(root,GAME_DATA[root.dataset.game]));
+</script>
+</body>
+</html>
